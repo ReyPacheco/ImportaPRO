@@ -1,0 +1,119 @@
+using System;
+
+class Program
+{
+static void Main()
+{
+const double tipoCambio = 20.00; // MXN por USD
+
+while (true)
+{
+Console.WriteLine("========================================");
+Console.WriteLine("     IMPORTAPRO+   ");
+Console.WriteLine("========================================");
+Console.WriteLine("1. iPhone");
+Console.WriteLine("2. iPad");
+Console.WriteLine("3. MacBook");
+Console.WriteLine("4. Takamine (Guitarra)");
+Console.WriteLine("5. Yamaha (Instrumento/Equipo)");
+Console.WriteLine("0. Salir");
+Console.Write("\nElige una opción: ");
+
+string opcion = Console.ReadLine();
+
+if (opcion == "0") break;
+
+string nombreProducto = "";
+double porcentajeArancel = 0.0;
+double flete = 0.0;
+double seguro = 0.0;
+
+// Switch para asignar datos predeterminados por producto
+switch (opcion)
+{
+case "1":
+nombreProducto = "iPhone";
+porcentajeArancel = 0.0;  // Celulares suelen estar exentos de arancel general
+flete = 350.0;
+seguro = 120.0;
+break;
+
+case "2":
+nombreProducto = "iPad";
+porcentajeArancel = 0.0;  // Tablets
+flete = 400.0;
+seguro = 150.0;
+break;
+
+case "3":
+nombreProducto = "MacBook";
+porcentajeArancel = 0.0;  // Laptops
+flete = 550.0;
+seguro = 250.0;
+break;
+
+case "4":
+nombreProducto = "Takamine";
+porcentajeArancel = 15.0; // Instrumentos musicales suelen llevar arancel
+flete = 900.0;
+seguro = 300.0;
+break;
+
+case "5":
+nombreProducto = "Yamaha";
+porcentajeArancel = 15.0;
+flete = 850.0;
+seguro = 280.0;
+break;
+
+default:
+Console.WriteLine("\nOpción no válida we, intenta de nuevo.\n");
+continue;
+}
+
+// Solo te pide cantidad y precio unitario
+Console.Write($"\nCantidad de {nombreProducto}: ");
+if (!int.TryParse(Console.ReadLine(), out int cantidad) || cantidad <= 0)
+{
+Console.WriteLine("Cantidad inválida.\n");
+continue;
+}
+
+Console.Write("Precio por pieza (USD): ");
+if (!double.TryParse(Console.ReadLine(), out double precioUnitario) || precioUnitario <= 0)
+{
+Console.WriteLine("Precio inválido.\n");
+continue;
+}
+
+// Cálculos
+double valorDolares = cantidad * precioUnitario;
+double valorMercancia = valorDolares * tipoCambio;
+double valorAduana = valorMercancia + flete + seguro;
+double arancel = valorAduana * (porcentajeArancel / 100.0);
+double dta = valorAduana * 0.008;
+double iva = (valorAduana + arancel + dta) * 0.16;
+double costoTotal = valorAduana + arancel + dta + iva;
+double costoUnitario = costoTotal / cantidad;
+
+// Resultados
+Console.WriteLine("\n================== RESULTADOS ==================");
+Console.WriteLine($"Producto:          {nombreProducto}");
+Console.WriteLine($"Cantidad:          {cantidad:N0} piezas");
+Console.WriteLine($"Valor mercancía:   ${valorMercancia:N2} MXN");
+Console.WriteLine($"Flete:             ${flete:N2} MXN");
+Console.WriteLine($"Seguro:            ${seguro:N2} MXN");
+Console.WriteLine("------------------------------------------------");
+Console.WriteLine($"Valor en aduana:   ${valorAduana:N2} MXN");
+Console.WriteLine($"Arancel ({porcentajeArancel}%):     ${arancel:N2} MXN");
+Console.WriteLine($"DTA:               ${dta:N2} MXN");
+Console.WriteLine($"IVA:               ${iva:N2} MXN");
+Console.WriteLine("------------------------------------------------");
+Console.WriteLine($"COSTO TOTAL:       ${costoTotal:N2} MXN");
+Console.WriteLine($"COSTO POR PIEZA:   ${costoUnitario:N2} MXN");
+Console.WriteLine("================================================\n");
+}
+
+Console.WriteLine("Listo carnal, programa cerrado.");
+}
+}
