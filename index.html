@@ -1,119 +1,851 @@
-using System;
+<!DOCTYPE html>
+<html lang="es">
+	<head>
+		<meta charset="UTF-8">
+			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+				<title>ImportaPro - Simulador de Costos de Importación</title>
+				<script src="https://cdn.tailwindcss.com"></script>
+				<link rel="preconnect" href="https://fonts.googleapis.com">
+					<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+						<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+							<script>
+								tailwind.config = {
+								theme: {
+								extend: {
+								fontFamily: {
+								sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+								},
+								colors: {
+								brand: {
+								50: '#f0f7ff',
+								100: '#e0effe',
+								600: '#0284c7',
+								700: '#0369a1',
+								900: '#082f49',
+								950: '#031726'
+								},
+								emerald: {
+								500: '#10b981',
+								600: '#059669',
+								700: '#047857'
+								}
+								}
+								}
+								}
+								}
+							</script>
+							<style>
+								body {
+								font-family: 'Plus Jakarta Sans', sans-serif;
+								}
+								.custom-scroll::-webkit-scrollbar {
+								width: 6px;
+								height: 6px;
+								}
+								.custom-scroll::-webkit-scrollbar-track {
+								background: #f1f5f9;
+								border-radius: 9999px;
+								}
+								.custom-scroll::-webkit-scrollbar-thumb {
+								background: #94a3b8;
+								border-radius: 9999px;
+								}
+								.tooltip-bubble {
+								visibility: hidden;
+								opacity: 0;
+								transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+								}
+								.tooltip-container:hover .tooltip-bubble {
+								visibility: visible;
+								opacity: 1;
+								}
+								.card-active {
+								border-color: #0284c7 !important;
+								background: linear-gradient(145deg, #f0f9ff 0%, #e0f2fe 100%) !important;
+								box-shadow: 0 10px 25px -5px rgba(2, 132, 199, 0.2) !important;
+								}
 
-class Program
-{
-static void Main()
-{
-const double tipoCambio = 20.00; // MXN por USD
+								@media print {
+								body {
+								background-color: #ffffff !important;
+								color: #000000 !important;
+								}
+								.no-print {
+								display: none !important;
+								}
+								.print-only {
+								display: block !important;
+								}
+								#resultsSection {
+								width: 100% !important;
+								margin: 0 !important;
+								padding: 0 !important;
+								}
+								* {
+								-webkit-print-color-adjust: exact !important;
+								print-color-adjust: exact !important;
+								}
+								}
+							</style>
+						</head>
+	<body class="bg-slate-50 text-slate-800 min-h-screen antialiased flex flex-col justify-between">
 
-while (true)
-{
-Console.WriteLine("========================================");
-Console.WriteLine("     IMPORTAPRO+   ");
-Console.WriteLine("========================================");
-Console.WriteLine("1. iPhone");
-Console.WriteLine("2. iPad");
-Console.WriteLine("3. MacBook");
-Console.WriteLine("4. Takamine (Guitarra)");
-Console.WriteLine("5. Yamaha (Instrumento/Equipo)");
-Console.WriteLine("0. Salir");
-Console.Write("\nElige una opción: ");
+		<!-- Botón Flotante para PDF -->
+		<button type="button" onclick="imprimirPDF()" class="no-print fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white font-bold py-3 px-5 rounded-full shadow-2xl shadow-emerald-600/40 border border-emerald-400/30 transition-all transform hover:scale-105 active:scale-95">
+			<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24-1.03-.36-2.096-.36-3.179 0-4.694 3.806-8.5 8.5-8.5 3.978 0 7.307 2.736 8.212 6.442M12 17.25v5.25m0 0l-3-3m3 3l3-3M3.75 16.5h3.75m0 0V21a1.5 1.5 0 001.5 1.5h6a1.5 1.5 0 001.5-1.5v-4.5m-9 0h9" />
+			</svg>
+			<span>Exportar / Imprimir PDF</span>
+		</button>
 
-string opcion = Console.ReadLine();
+		<header class="no-print bg-brand-950 text-white border-b border-slate-800 sticky top-0 z-40 backdrop-blur-md bg-opacity-95 shadow-md">
+			<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
+				<div class="flex items-center space-x-3">
+					<div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+						<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/>
+						</svg>
+					</div>
+					<div>
+						<span class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-white via-sky-200 to-emerald-400 bg-clip-text text-transparent">IMPORTAPRO</span>
+						<span class="block text-xs font-medium text-slate-400">Simulador Aduanal EE.UU. &rarr; México</span>
+					</div>
+				</div>
 
-if (opcion == "0") break;
+				<div class="flex items-center gap-3 text-xs bg-slate-900/80 px-3.5 py-1.5 rounded-full border border-slate-700/60 text-slate-300">
+					<span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+					<span>
+						Tipo de cambio: <strong class="text-emerald-400">$17.95 MXN/USD</strong>
+					</span>
+				</div>
+			</div>
+		</header>
 
-string nombreProducto = "";
-double porcentajeArancel = 0.0;
-double flete = 0.0;
-double seguro = 0.0;
+		<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-1">
 
-// Switch para asignar datos predeterminados por producto
-switch (opcion)
-{
-case "1":
-nombreProducto = "iPhone";
-porcentajeArancel = 0.0;  // Celulares suelen estar exentos de arancel general
-flete = 350.0;
-seguro = 120.0;
-break;
+			<!-- Encabezado para PDF / Impresión -->
+			<div class="hidden print-only mb-6 pb-4 border-b-2 border-slate-900">
+				<div class="flex items-center justify-between">
+					<div>
+						<h1 class="text-2xl font-black text-slate-900 tracking-tight">IMPORTAPRO - COTIZACIÓN DE IMPORTACIÓN</h1>
+						<p class="text-xs text-slate-600">Simulación aduanal y fiscal para importación de EE.UU. a México</p>
+					</div>
+					<div class="text-right text-xs text-slate-500">
+						<p id="printDate" class="font-bold text-slate-800"></p>
+						<p>T.C. Referencia: $17.95 MXN/USD</p>
+					</div>
+				</div>
+			</div>
 
-case "2":
-nombreProducto = "iPad";
-porcentajeArancel = 0.0;  // Tablets
-flete = 400.0;
-seguro = 150.0;
-break;
+			<div class="no-print mb-6">
+				<h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Calculadora de Aranceles e Impuestos de Importación</h1>
+				<p class="text-slate-600 mt-1 max-w-2xl text-sm sm:text-base">Selecciona un modelo de iPhone u otro producto frecuente para calcular el desglose aduanal en México con DTA (8 al millar) e IVA (16%).</p>
+			</div>
 
-case "3":
-nombreProducto = "MacBook";
-porcentajeArancel = 0.0;  // Laptops
-flete = 550.0;
-seguro = 250.0;
-break;
+			<!-- Catálogo de Presets -->
+			<div class="no-print mb-8">
+				<div class="flex items-center justify-between mb-3">
+					<h2 class="text-xs font-bold uppercase tracking-wider text-slate-500">Paso 1: Elige un producto o modelo de iPhone</h2>
+					<span class="text-xs text-sky-600 font-semibold" id="presetNotice">Preset seleccionado: iPhone 15</span>
+				</div>
 
-case "4":
-nombreProducto = "Takamine";
-porcentajeArancel = 15.0; // Instrumentos musicales suelen llevar arancel
-flete = 900.0;
-seguro = 300.0;
-break;
+				<!-- Contenedor scrollable ordenado -->
+				<div class="max-h-72 overflow-y-auto custom-scroll p-1 border border-slate-200/80 rounded-2xl bg-slate-100/60">
+					<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2.5" id="presetsContainer">
 
-case "5":
-nombreProducto = "Yamaha";
-porcentajeArancel = 15.0;
-flete = 850.0;
-seguro = 280.0;
-break;
+						<!-- iPhone 15 Series -->
+						<button type="button" onclick="selectPreset('iphone15')" id="card-iphone15" class="product-card card-active text-left p-3 rounded-xl border-2 border-slate-200 bg-white hover:border-sky-400 transition-all flex flex-col justify-between group">
+							<div class="flex items-center justify-between mb-1.5">
+								<span class="text-xl">📲</span>
+								<span class="text-[11px] font-bold text-sky-700 bg-sky-100 px-1.5 py-0.5 rounded">$699 USD</span>
+							</div>
+							<div>
+								<div class="font-bold text-slate-900 text-xs group-hover:text-sky-700">iPhone 15</div>
+								<div class="text-[10px] text-slate-500">0% IGI (T-MEC)</div>
+							</div>
+						</button>
 
-default:
-Console.WriteLine("\nOpción no válida we, intenta de nuevo.\n");
-continue;
-}
+						<button type="button" onclick="selectPreset('iphone15plus')" id="card-iphone15plus" class="product-card text-left p-3 rounded-xl border-2 border-slate-200 bg-white hover:border-sky-400 transition-all flex flex-col justify-between group">
+							<div class="flex items-center justify-between mb-1.5">
+								<span class="text-xl">📲</span>
+								<span class="text-[11px] font-bold text-sky-700 bg-sky-100 px-1.5 py-0.5 rounded">$799 USD</span>
+							</div>
+							<div>
+								<div class="font-bold text-slate-900 text-xs group-hover:text-sky-700">iPhone 15 Plus</div>
+								<div class="text-[10px] text-slate-500">0% IGI (T-MEC)</div>
+							</div>
+						</button>
 
-// Solo te pide cantidad y precio unitario
-Console.Write($"\nCantidad de {nombreProducto}: ");
-if (!int.TryParse(Console.ReadLine(), out int cantidad) || cantidad <= 0)
-{
-Console.WriteLine("Cantidad inválida.\n");
-continue;
-}
+						<button type="button" onclick="selectPreset('iphone15pro')" id="card-iphone15pro" class="product-card text-left p-3 rounded-xl border-2 border-slate-200 bg-white hover:border-sky-400 transition-all flex flex-col justify-between group">
+							<div class="flex items-center justify-between mb-1.5">
+								<span class="text-xl">📱</span>
+								<span class="text-[11px] font-bold text-sky-700 bg-sky-100 px-1.5 py-0.5 rounded">$999 USD</span>
+							</div>
+							<div>
+								<div class="font-bold text-slate-900 text-xs group-hover:text-sky-700">iPhone 15 Pro</div>
+								<div class="text-[10px] text-slate-500">0% IGI (T-MEC)</div>
+							</div>
+						</button>
 
-Console.Write("Precio por pieza (USD): ");
-if (!double.TryParse(Console.ReadLine(), out double precioUnitario) || precioUnitario <= 0)
-{
-Console.WriteLine("Precio inválido.\n");
-continue;
-}
+						<button type="button" onclick="selectPreset('iphone15promax')" id="card-iphone15promax" class="product-card text-left p-3 rounded-xl border-2 border-slate-200 bg-white hover:border-sky-400 transition-all flex flex-col justify-between group">
+							<div class="flex items-center justify-between mb-1.5">
+								<span class="text-xl">📱</span>
+								<span class="text-[11px] font-bold text-sky-700 bg-sky-100 px-1.5 py-0.5 rounded">$1,199 USD</span>
+							</div>
+							<div>
+								<div class="font-bold text-slate-900 text-xs group-hover:text-sky-700">iPhone 15 Pro Max</div>
+								<div class="text-[10px] text-slate-500">0% IGI (T-MEC)</div>
+							</div>
+						</button>
 
-// Cálculos
-double valorDolares = cantidad * precioUnitario;
-double valorMercancia = valorDolares * tipoCambio;
-double valorAduana = valorMercancia + flete + seguro;
-double arancel = valorAduana * (porcentajeArancel / 100.0);
-double dta = valorAduana * 0.008;
-double iva = (valorAduana + arancel + dta) * 0.16;
-double costoTotal = valorAduana + arancel + dta + iva;
-double costoUnitario = costoTotal / cantidad;
+						<!-- iPhone 16 Series -->
+						<button type="button" onclick="selectPreset('iphone16')" id="card-iphone16" class="product-card text-left p-3 rounded-xl border-2 border-slate-200 bg-white hover:border-sky-400 transition-all flex flex-col justify-between group">
+							<div class="flex items-center justify-between mb-1.5">
+								<span class="text-xl">📲</span>
+								<span class="text-[11px] font-bold text-sky-700 bg-sky-100 px-1.5 py-0.5 rounded">$799 USD</span>
+							</div>
+							<div>
+								<div class="font-bold text-slate-900 text-xs group-hover:text-sky-700">iPhone 16</div>
+								<div class="text-[10px] text-slate-500">0% IGI (T-MEC)</div>
+							</div>
+						</button>
 
-// Resultados
-Console.WriteLine("\n================== RESULTADOS ==================");
-Console.WriteLine($"Producto:          {nombreProducto}");
-Console.WriteLine($"Cantidad:          {cantidad:N0} piezas");
-Console.WriteLine($"Valor mercancía:   ${valorMercancia:N2} MXN");
-Console.WriteLine($"Flete:             ${flete:N2} MXN");
-Console.WriteLine($"Seguro:            ${seguro:N2} MXN");
-Console.WriteLine("------------------------------------------------");
-Console.WriteLine($"Valor en aduana:   ${valorAduana:N2} MXN");
-Console.WriteLine($"Arancel ({porcentajeArancel}%):     ${arancel:N2} MXN");
-Console.WriteLine($"DTA:               ${dta:N2} MXN");
-Console.WriteLine($"IVA:               ${iva:N2} MXN");
-Console.WriteLine("------------------------------------------------");
-Console.WriteLine($"COSTO TOTAL:       ${costoTotal:N2} MXN");
-Console.WriteLine($"COSTO POR PIEZA:   ${costoUnitario:N2} MXN");
-Console.WriteLine("================================================\n");
-}
+						<button type="button" onclick="selectPreset('iphone16pro')" id="card-iphone16pro" class="product-card text-left p-3 rounded-xl border-2 border-slate-200 bg-white hover:border-sky-400 transition-all flex flex-col justify-between group">
+							<div class="flex items-center justify-between mb-1.5">
+								<span class="text-xl">📱</span>
+								<span class="text-[11px] font-bold text-sky-700 bg-sky-100 px-1.5 py-0.5 rounded">$999 USD</span>
+							</div>
+							<div>
+								<div class="font-bold text-slate-900 text-xs group-hover:text-sky-700">iPhone 16 Pro</div>
+								<div class="text-[10px] text-slate-500">0% IGI (T-MEC)</div>
+							</div>
+						</button>
 
-Console.WriteLine("Listo carnal, programa cerrado.");
-}
-}
+						<button type="button" onclick="selectPreset('iphone16promax')" id="card-iphone16promax" class="product-card text-left p-3 rounded-xl border-2 border-slate-200 bg-white hover:border-sky-400 transition-all flex flex-col justify-between group">
+							<div class="flex items-center justify-between mb-1.5">
+								<span class="text-xl">📱</span>
+								<span class="text-[11px] font-bold text-sky-700 bg-sky-100 px-1.5 py-0.5 rounded">$1,199 USD</span>
+							</div>
+							<div>
+								<div class="font-bold text-slate-900 text-xs group-hover:text-sky-700">iPhone 16 Pro Max</div>
+								<div class="text-[10px] text-slate-500">0% IGI (T-MEC)</div>
+							</div>
+						</button>
+
+						<!-- iPhone 17 Series -->
+						<button type="button" onclick="selectPreset('iphone17')" id="card-iphone17" class="product-card text-left p-3 rounded-xl border-2 border-slate-200 bg-white hover:border-sky-400 transition-all flex flex-col justify-between group">
+							<div class="flex items-center justify-between mb-1.5">
+								<span class="text-xl">📲</span>
+								<span class="text-[11px] font-bold text-sky-700 bg-sky-100 px-1.5 py-0.5 rounded">$799 USD</span>
+							</div>
+							<div>
+								<div class="font-bold text-slate-900 text-xs group-hover:text-sky-700">iPhone 17</div>
+								<div class="text-[10px] text-slate-500">0% IGI (T-MEC)</div>
+							</div>
+						</button>
+
+						<button type="button" onclick="selectPreset('iphone17pro')" id="card-iphone17pro" class="product-card text-left p-3 rounded-xl border-2 border-slate-200 bg-white hover:border-sky-400 transition-all flex flex-col justify-between group">
+							<div class="flex items-center justify-between mb-1.5">
+								<span class="text-xl">📱</span>
+								<span class="text-[11px] font-bold text-sky-700 bg-sky-100 px-1.5 py-0.5 rounded">$1,099 USD</span>
+							</div>
+							<div>
+								<div class="font-bold text-slate-900 text-xs group-hover:text-sky-700">iPhone 17 Pro</div>
+								<div class="text-[10px] text-slate-500">0% IGI (T-MEC)</div>
+							</div>
+						</button>
+
+						<button type="button" onclick="selectPreset('iphone17promax')" id="card-iphone17promax" class="product-card text-left p-3 rounded-xl border-2 border-slate-200 bg-white hover:border-sky-400 transition-all flex flex-col justify-between group">
+							<div class="flex items-center justify-between mb-1.5">
+								<span class="text-xl">📱</span>
+								<span class="text-[11px] font-bold text-sky-700 bg-sky-100 px-1.5 py-0.5 rounded">$1,299 USD</span>
+							</div>
+							<div>
+								<div class="font-bold text-slate-900 text-xs group-hover:text-sky-700">iPhone 17 Pro Max</div>
+								<div class="text-[10px] text-slate-500">0% IGI (T-MEC)</div>
+							</div>
+						</button>
+
+						<!-- Conceptos & Modelos Futuros: iPhone Duo, 18 Pro, 18 Pro Max -->
+						<button type="button" onclick="selectPreset('iphoneduo')" id="card-iphoneduo" class="product-card text-left p-3 rounded-xl border-2 border-slate-200 bg-white hover:border-sky-400 transition-all flex flex-col justify-between group">
+							<div class="flex items-center justify-between mb-1.5">
+								<span class="text-xl">📖</span>
+								<span class="text-[11px] font-bold text-purple-700 bg-purple-100 px-1.5 py-0.5 rounded">$1,499 USD</span>
+							</div>
+							<div>
+								<div class="font-bold text-slate-900 text-xs group-hover:text-purple-700">iPhone Duo (Fold)</div>
+								<div class="text-[10px] text-purple-600">Plegable / 0% IGI</div>
+							</div>
+						</button>
+
+						<button type="button" onclick="selectPreset('iphone18pro')" id="card-iphone18pro" class="product-card text-left p-3 rounded-xl border-2 border-slate-200 bg-white hover:border-sky-400 transition-all flex flex-col justify-between group">
+							<div class="flex items-center justify-between mb-1.5">
+								<span class="text-xl">⚡</span>
+								<span class="text-[11px] font-bold text-sky-700 bg-sky-100 px-1.5 py-0.5 rounded">$1,149 USD</span>
+							</div>
+							<div>
+								<div class="font-bold text-slate-900 text-xs group-hover:text-sky-700">iPhone 18 Pro</div>
+								<div class="text-[10px] text-slate-500">0% IGI (T-MEC)</div>
+							</div>
+						</button>
+
+						<button type="button" onclick="selectPreset('iphone18promax')" id="card-iphone18promax" class="product-card text-left p-3 rounded-xl border-2 border-slate-200 bg-white hover:border-sky-400 transition-all flex flex-col justify-between group">
+							<div class="flex items-center justify-between mb-1.5">
+								<span class="text-xl">⚡</span>
+								<span class="text-[11px] font-bold text-sky-700 bg-sky-100 px-1.5 py-0.5 rounded">$1,349 USD</span>
+							</div>
+							<div>
+								<div class="font-bold text-slate-900 text-xs group-hover:text-sky-700">iPhone 18 Pro Max</div>
+								<div class="text-[10px] text-slate-500">0% IGI (T-MEC)</div>
+							</div>
+						</button>
+
+						<!-- Otros dispositivos -->
+						<button type="button" onclick="selectPreset('ps5')" id="card-ps5" class="product-card text-left p-3 rounded-xl border-2 border-slate-200 bg-white hover:border-sky-400 transition-all flex flex-col justify-between group">
+							<div class="flex items-center justify-between mb-1.5">
+								<span class="text-xl">🎮</span>
+								<span class="text-[11px] font-bold text-sky-700 bg-sky-100 px-1.5 py-0.5 rounded">$499 USD</span>
+							</div>
+							<div>
+								<div class="font-bold text-slate-900 text-xs group-hover:text-sky-700">PlayStation 5</div>
+								<div class="text-[10px] text-slate-500">Consola / 0% IGI</div>
+							</div>
+						</button>
+
+						<button type="button" onclick="selectPreset('sneakers')" id="card-sneakers" class="product-card text-left p-3 rounded-xl border-2 border-slate-200 bg-white hover:border-sky-400 transition-all flex flex-col justify-between group">
+							<div class="flex items-center justify-between mb-1.5">
+								<span class="text-xl">👟</span>
+								<span class="text-[11px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">$140 USD</span>
+							</div>
+							<div>
+								<div class="font-bold text-slate-900 text-xs group-hover:text-amber-700">Tenis Deportivos</div>
+								<div class="text-[10px] text-amber-600 font-medium">Arancel 20%</div>
+							</div>
+						</button>
+
+						<button type="button" onclick="selectPreset('guitar')" id="card-guitar" class="product-card text-left p-3 rounded-xl border-2 border-slate-200 bg-white hover:border-sky-400 transition-all flex flex-col justify-between group">
+							<div class="flex items-center justify-between mb-1.5">
+								<span class="text-xl">🎸</span>
+								<span class="text-[11px] font-bold text-sky-700 bg-sky-100 px-1.5 py-0.5 rounded">$350 USD</span>
+							</div>
+							<div>
+								<div class="font-bold text-slate-900 text-xs group-hover:text-sky-700">Guitarra Acústica</div>
+								<div class="text-[10px] text-sky-600 font-medium">Arancel 10%</div>
+							</div>
+						</button>
+
+						<button type="button" onclick="selectPreset('custom')" id="card-custom" class="product-card text-left p-3 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 hover:border-slate-400 transition-all flex flex-col justify-between group">
+							<div class="flex items-center justify-between mb-1.5">
+								<span class="text-xl">📦</span>
+								<span class="text-[11px] font-bold text-slate-700 bg-slate-200 px-1.5 py-0.5 rounded">Manual</span>
+							</div>
+							<div>
+								<div class="font-bold text-slate-900 text-xs group-hover:text-slate-800">Personalizado</div>
+								<div class="text-[10px] text-slate-500">Cualquier artículo</div>
+							</div>
+						</button>
+
+					</div>
+				</div>
+			</div>
+
+			<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+				<!-- Columna Izquierda: Parámetros -->
+				<div id="formSection" class="no-print lg:col-span-6 bg-white p-6 sm:p-7 rounded-3xl border border-slate-200/80 shadow-sm space-y-5">
+					<div class="flex items-center justify-between pb-4 border-b border-slate-100">
+						<h2 class="font-bold text-slate-900 text-lg flex items-center gap-2">
+							<span class="w-2.5 h-2.5 rounded-full bg-sky-600"></span> Parámetros de Operación
+						</h2>
+						<button type="button" onclick="resetForm()" class="text-xs text-slate-500 hover:text-red-500 transition-colors font-medium">Restablecer valores</button>
+					</div>
+
+					<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+						<div class="sm:col-span-2">
+							<label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5" for="inputProduct">Nombre del producto</label>
+							<input type="text" id="inputProduct" value="iPhone 15" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent text-slate-800 font-semibold text-sm transition-all">
+          </div>
+						<div>
+							<label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5" for="inputQty">Cantidad (pzs)</label>
+							<input type="number" id="inputQty" value="1" min="1" step="1" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent text-slate-800 font-bold text-sm transition-all">
+          </div>
+					</div>
+
+					<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+						<div>
+							<label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5" for="inputPriceUSD">Precio Unitario (USD)</label>
+							<div class="relative">
+								<span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 font-bold text-sm">$</span>
+								<input type="number" id="inputPriceUSD" value="699.00" min="0.01" step="0.01" class="w-full pl-8 pr-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent text-slate-800 font-bold text-sm transition-all">
+            </div>
+						</div>
+						<div>
+							<div class="flex items-center justify-between mb-1.5">
+								<label class="block text-xs font-bold uppercase tracking-wider text-slate-600" for="inputExchangeRate">Tipo de Cambio</label>
+								<span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded font-mono">FIJO 17.95</span>
+							</div>
+							<div class="relative">
+								<span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 font-bold text-sm">$</span>
+								<input type="number" id="inputExchangeRate" value="17.95" min="1" step="0.01" class="w-full pl-8 pr-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent text-slate-800 font-bold text-sm transition-all">
+            </div>
+						</div>
+					</div>
+
+					<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+						<div>
+							<div class="flex items-center justify-between mb-1.5">
+								<label class="block text-xs font-bold uppercase tracking-wider text-slate-600" for="inputFreight">Flete de Envío (MXN)</label>
+								<div class="relative tooltip-container cursor-help">
+									<span class="text-slate-400 hover:text-slate-600 text-xs font-bold">&#9432;</span>
+									<div class="tooltip-bubble absolute bottom-full mb-2 right-0 w-48 p-2 bg-slate-900 text-white text-[11px] rounded-lg shadow-xl z-20 leading-snug">
+										Costo de transporte o paquetería desde EE.UU. hasta la aduana mexicana.
+									</div>
+								</div>
+							</div>
+							<div class="relative">
+								<span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 font-bold text-sm">$</span>
+								<input type="number" id="inputFreight" value="300.00" min="0" step="10" class="w-full pl-8 pr-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent text-slate-800 font-bold text-sm transition-all">
+            </div>
+						</div>
+
+						<div>
+							<div class="flex items-center justify-between mb-1.5">
+								<label class="block text-xs font-bold uppercase tracking-wider text-slate-600" for="inputInsurance">Seguro de Carga (MXN)</label>
+								<div class="relative tooltip-container cursor-help">
+									<span class="text-slate-400 hover:text-slate-600 text-xs font-bold">&#9432;</span>
+									<div class="tooltip-bubble absolute bottom-full mb-2 right-0 w-48 p-2 bg-slate-900 text-white text-[11px] rounded-lg shadow-xl z-20 leading-snug">
+										Protección contra robo, daño o extravío en tránsito aduanal.
+									</div>
+								</div>
+							</div>
+							<div class="relative">
+								<span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 font-bold text-sm">$</span>
+								<input type="number" id="inputInsurance" value="250.00" min="0" step="10" class="w-full pl-8 pr-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent text-slate-800 font-bold text-sm transition-all">
+            </div>
+						</div>
+					</div>
+
+					<div>
+						<div class="flex items-center justify-between mb-1.5">
+							<label class="block text-xs font-bold uppercase tracking-wider text-slate-600" for="inputTariff">Porcentaje de Arancel (IGI %)</label>
+							<div class="relative tooltip-container cursor-help">
+								<span class="text-slate-400 hover:text-slate-600 text-xs font-bold">&#9432;</span>
+								<div class="tooltip-bubble absolute bottom-full mb-2 right-0 w-56 p-2 bg-slate-900 text-white text-[11px] rounded-lg shadow-xl z-20 leading-snug">
+									Los teléfonos celulares y smartphones pagan 0% de IGI bajo el tratado T-MEC.
+								</div>
+							</div>
+						</div>
+						<div class="relative">
+							<input type="number" id="inputTariff" value="0.0" min="0" max="100" step="0.5" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent text-slate-800 font-bold text-sm transition-all pr-8">
+								<span class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 font-bold text-sm">%</span>
+							</div>
+					</div>
+
+					<button type="button" onclick="calculateImport()" class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-sky-600 via-sky-700 to-brand-900 hover:from-sky-500 hover:to-brand-950 text-white font-bold text-base shadow-lg shadow-sky-600/25 active:scale-[0.99] transition-all flex items-center justify-center gap-2">
+						<svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 15.75l-2.489-2.489m0 0a3.375 3.375 0 10-4.773-4.773 3.375 3.375 0 004.774 4.774zM21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+						</svg>
+						Calcular Costos de Importación
+					</button>
+				</div>
+
+				<!-- Columna Derecha: Resumen de Resultados -->
+				<div id="resultsSection" class="lg:col-span-6 space-y-6">
+					<div class="bg-gradient-to-br from-brand-950 via-slate-900 to-brand-900 text-white p-7 rounded-3xl shadow-xl border border-slate-800 relative overflow-hidden">
+						<div class="no-print absolute -right-10 -bottom-10 w-44 h-44 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+						<div class="flex items-center justify-between pb-4 border-b border-slate-800/80 mb-6">
+							<div>
+								<span class="text-xs uppercase font-extrabold tracking-widest text-emerald-400">Resumen Aduanal</span>
+								<h3 class="text-xl font-bold text-white flex items-center gap-2" id="outProductName">
+									iPhone 15
+								</h3>
+							</div>
+							<div class="flex items-center gap-2">
+								<span class="bg-slate-800/80 px-3 py-1 rounded-full text-xs font-semibold text-sky-300 border border-slate-700" id="outQtyTag">
+									1 pieza
+								</span>
+								<button type="button" onclick="imprimirPDF()" title="Imprimir / Guardar en PDF" class="no-print bg-white/10 hover:bg-white/20 text-white p-1.5 rounded-lg border border-white/10 transition-colors">
+									<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24-1.03-.36-2.096-.36-3.179 0-4.694 3.806-8.5 8.5-8.5 3.978 0 7.307 2.736 8.212 6.442M12 17.25v5.25m0 0l-3-3m3 3l3-3M3.75 16.5h3.75m0 0V21a1.5 1.5 0 001.5 1.5h6a1.5 1.5 0 001.5-1.5v-4.5m-9 0h9" />
+									</svg>
+								</button>
+							</div>
+						</div>
+
+						<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+							<div class="bg-white/5 p-4 rounded-2xl border border-white/10 backdrop-blur-sm">
+								<span class="text-xs uppercase tracking-wider font-semibold text-slate-400 block mb-1">Costo Total Final</span>
+								<div class="text-3xl font-extrabold text-emerald-400 tracking-tight" id="outTotalCost">
+									$0.00
+								</div>
+								<span class="text-[11px] text-slate-400 mt-1 block">MXN puesto en México</span>
+							</div>
+
+							<div class="bg-white/5 p-4 rounded-2xl border border-white/10 backdrop-blur-sm">
+								<span class="text-xs uppercase tracking-wider font-semibold text-slate-400 block mb-1">Costo Unitario</span>
+								<div class="text-3xl font-extrabold text-white tracking-tight" id="outUnitCost">
+									$0.00
+								</div>
+								<span class="text-[11px] text-slate-400 mt-1 block">MXN por cada pieza</span>
+							</div>
+						</div>
+					</div>
+
+					<!-- Tabla detallada -->
+					<div class="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200/80 shadow-sm">
+						<h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-4 pb-2 border-b border-slate-100 flex items-center justify-between">
+							<span>Desglose Arancelario y Fiscal</span>
+							<span class="text-[11px] lowercase font-normal text-slate-400">cifras en MXN</span>
+						</h4>
+
+						<div class="space-y-3.5 text-sm">
+							<div class="flex items-center justify-between">
+								<div class="flex items-center gap-1.5 text-slate-700 font-medium">
+									<span>Valor Mercancía</span>
+									<span class="text-xs text-slate-400 font-normal" id="outMerchUSD">($0.00 USD)</span>
+								</div>
+								<span class="font-bold text-slate-900" id="outMerchMXN">$0.00</span>
+							</div>
+
+							<div class="flex items-center justify-between">
+								<span class="text-slate-700 font-medium">Flete de Envío</span>
+								<span class="font-bold text-slate-900" id="outFreight">$0.00</span>
+							</div>
+
+							<div class="flex items-center justify-between">
+								<span class="text-slate-700 font-medium">Seguro de Transporte</span>
+								<span class="font-bold text-slate-900" id="outInsurance">$0.00</span>
+							</div>
+
+							<div class="flex items-center justify-between pt-2 border-t border-slate-100 bg-sky-50/60 p-2.5 rounded-xl">
+								<div class="flex items-center gap-1.5 text-sky-900 font-semibold">
+									<span>Valor en Aduana</span>
+									<div class="no-print relative tooltip-container cursor-help">
+										<span class="text-sky-500 hover:text-sky-700 text-xs font-bold">&#9432;</span>
+										<div class="tooltip-bubble absolute bottom-full mb-2 left-0 w-60 p-2 bg-slate-900 text-white text-[11px] rounded-lg shadow-xl z-20 leading-snug">
+											Base gravable: Mercancía + Flete + Seguro. Sobre este monto se calcula el DTA e IVA.
+										</div>
+									</div>
+								</div>
+								<span class="font-extrabold text-sky-900" id="outCustomsValue">$0.00</span>
+							</div>
+
+							<div class="flex items-center justify-between">
+								<div class="flex items-center gap-1.5 text-slate-700 font-medium">
+									<span>Arancel (IGI)</span>
+									<span class="text-xs text-slate-500" id="outTariffPercent">(0.0%)</span>
+								</div>
+								<span class="font-bold text-slate-900" id="outTariffCost">$0.00</span>
+							</div>
+
+							<div class="flex items-center justify-between">
+								<div class="flex items-center gap-1.5 text-slate-700 font-medium">
+									<span>Derecho de Trámite Aduanero (DTA)</span>
+									<div class="no-print relative tooltip-container cursor-help">
+										<span class="text-slate-400 hover:text-slate-600 text-xs font-bold">&#9432;</span>
+										<div class="tooltip-bubble absolute bottom-full mb-2 left-0 w-60 p-2 bg-slate-900 text-white text-[11px] rounded-lg shadow-xl z-20 leading-snug">
+											DTA: Tasa general del 8 al millar (0.8%) calculada sobre el valor en aduana conforme a la Ley Federal de Derechos.
+										</div>
+									</div>
+								</div>
+								<span class="font-bold text-slate-900" id="outDTA">$0.00</span>
+							</div>
+
+							<div class="flex items-center justify-between">
+								<div class="flex items-center gap-1.5 text-slate-700 font-medium">
+									<span>IVA a la Importación (16%)</span>
+									<div class="no-print relative tooltip-container cursor-help">
+										<span class="text-slate-400 hover:text-slate-600 text-xs font-bold">&#9432;</span>
+										<div class="tooltip-bubble absolute bottom-full mb-2 left-0 w-60 p-2 bg-slate-900 text-white text-[11px] rounded-lg shadow-xl z-20 leading-snug">
+											Calculado aplicando 16% sobre: Valor Aduana + Arancel + DTA.
+										</div>
+									</div>
+								</div>
+								<span class="font-bold text-slate-900" id="outIVA">$0.00</span>
+							</div>
+						</div>
+
+						<div class="no-print mt-6 pt-4 border-t border-slate-100">
+							<button type="button" onclick="imprimirPDF()" class="w-full py-3 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-sm transition-colors flex items-center justify-center gap-2 border border-slate-300">
+								<svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24-1.03-.36-2.096-.36-3.179 0-4.694 3.806-8.5 8.5-8.5 3.978 0 7.307 2.736 8.212 6.442M12 17.25v5.25m0 0l-3-3m3 3l3-3M3.75 16.5h3.75m0 0V21a1.5 1.5 0 001.5 1.5h6a1.5 1.5 0 001.5-1.5v-4.5m-9 0h9" />
+								</svg>
+								Descargar Cotización (PDF)
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</main>
+
+		<footer class="no-print bg-white border-t border-slate-200 mt-12 py-6 text-slate-500 text-xs">
+			<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+				<div>
+					<span class="font-bold text-slate-700">ImportaPro</span> &copy; Simulador fiscal con fórmulas basadas en la Ley Aduanera de México.
+				</div>
+				<div class="flex items-center gap-4 text-slate-400">
+					<span>T-MEC Friendly</span>
+					<span>•</span>
+					<span>TC: $17.95 MXN</span>
+					<span>•</span>
+					<span>DTA 8 al millar</span>
+					<span>•</span>
+					<span>IVA 16%</span>
+				</div>
+			</div>
+		</footer>
+
+		<script>
+			// Catálogo con toda la línea de iPhones y productos solicitados
+			const presets = {
+			// iPhone 15 Series
+			iphone15: {
+			name: "iPhone 15",
+			priceUSD: 699.00,
+			freight: 300.00,
+			insurance: 250.00,
+			tariff: 0.0
+			},
+			iphone15plus: {
+			name: "iPhone 15 Plus",
+			priceUSD: 799.00,
+			freight: 300.00,
+			insurance: 280.00,
+			tariff: 0.0
+			},
+			iphone15pro: {
+			name: "iPhone 15 Pro",
+			priceUSD: 999.00,
+			freight: 300.00,
+			insurance: 350.00,
+			tariff: 0.0
+			},
+			iphone15promax: {
+			name: "iPhone 15 Pro Max",
+			priceUSD: 1199.00,
+			freight: 320.00,
+			insurance: 400.00,
+			tariff: 0.0
+			},
+
+			// iPhone 16 Series
+			iphone16: {
+			name: "iPhone 16",
+			priceUSD: 799.00,
+			freight: 300.00,
+			insurance: 280.00,
+			tariff: 0.0
+			},
+			iphone16pro: {
+			name: "iPhone 16 Pro",
+			priceUSD: 999.00,
+			freight: 300.00,
+			insurance: 350.00,
+			tariff: 0.0
+			},
+			iphone16promax: {
+			name: "iPhone 16 Pro Max",
+			priceUSD: 1199.00,
+			freight: 320.00,
+			insurance: 400.00,
+			tariff: 0.0
+			},
+
+			// iPhone 17 Series
+			iphone17: {
+			name: "iPhone 17",
+			priceUSD: 799.00,
+			freight: 300.00,
+			insurance: 280.00,
+			tariff: 0.0
+			},
+			iphone17pro: {
+			name: "iPhone 17 Pro",
+			priceUSD: 1099.00,
+			freight: 320.00,
+			insurance: 380.00,
+			tariff: 0.0
+			},
+			iphone17promax: {
+			name: "iPhone 17 Pro Max",
+			priceUSD: 1299.00,
+			freight: 350.00,
+			insurance: 450.00,
+			tariff: 0.0
+			},
+
+			// Conceptos y Línea 18: iPhone Duo, 18 Pro, 18 Pro Max
+			iphoneduo: {
+			name: "iPhone Duo (Foldable)",
+			priceUSD: 1499.00,
+			freight: 380.00,
+			insurance: 500.00,
+			tariff: 0.0
+			},
+			iphone18pro: {
+			name: "iPhone 18 Pro",
+			priceUSD: 1149.00,
+			freight: 320.00,
+			insurance: 400.00,
+			tariff: 0.0
+			},
+			iphone18promax: {
+			name: "iPhone 18 Pro Max",
+			priceUSD: 1349.00,
+			freight: 350.00,
+			insurance: 460.00,
+			tariff: 0.0
+			},
+
+			// Otros
+			ps5: {
+			name: "PlayStation 5 Slim",
+			priceUSD: 499.00,
+			freight: 450.00,
+			insurance: 200.00,
+			tariff: 0.0
+			},
+			sneakers: {
+			name: "Tenis Deportivos",
+			priceUSD: 140.00,
+			freight: 280.00,
+			insurance: 100.00,
+			tariff: 20.0
+			},
+			guitar: {
+			name: "Guitarra Acústica",
+			priceUSD: 350.00,
+			freight: 650.00,
+			insurance: 220.00,
+			tariff: 10.0
+			},
+			custom: {
+			name: "Producto Personalizado",
+			priceUSD: 100.00,
+			freight: 300.00,
+			insurance: 150.00,
+			tariff: 0.0
+			}
+			};
+
+			let currentPreset = 'iphone15';
+
+			function formatMXN(amount) {
+			return new Intl.NumberFormat('es-MX', {
+			style: 'currency',
+			currency: 'MXN',
+			minimumFractionDigits: 2,
+			maximumFractionDigits: 2
+			}).format(amount);
+			}
+
+			function formatUSD(amount) {
+			return new Intl.NumberFormat('en-US', {
+			style: 'currency',
+			currency: 'USD',
+			minimumFractionDigits: 2,
+			maximumFractionDigits: 2
+			}).format(amount);
+			}
+
+			function selectPreset(key) {
+			currentPreset = key;
+			const data = presets[key];
+
+			document.querySelectorAll('.product-card').forEach(btn => {
+			btn.classList.remove('card-active');
+			});
+			const activeCard = document.getElementById(`card-${key}`);
+			if (activeCard) {
+			activeCard.classList.add('card-active');
+			}
+
+			document.getElementById('inputProduct').value = data.name;
+			document.getElementById('inputPriceUSD').value = data.priceUSD.toFixed(2);
+			document.getElementById('inputFreight').value = data.freight.toFixed(2);
+			document.getElementById('inputInsurance').value = data.insurance.toFixed(2);
+			document.getElementById('inputTariff').value = data.tariff.toFixed(1);
+
+			document.getElementById('presetNotice').textContent = `Preset seleccionado: ${data.name}`;
+
+			calculateImport();
+			}
+
+			function calculateImport() {
+			const productName = document.getElementById('inputProduct').value.trim() || 'Sin Nombre';
+			const qty = Math.max(1, parseInt(document.getElementById('inputQty').value) || 1);
+			const priceUSD = Math.max(0, parseFloat(document.getElementById('inputPriceUSD').value) || 0);
+			const exchangeRate = Math.max(0.01, parseFloat(document.getElementById('inputExchangeRate').value) || 17.95);
+			const freight = Math.max(0, parseFloat(document.getElementById('inputFreight').value) || 0);
+			const insurance = Math.max(0, parseFloat(document.getElementById('inputInsurance').value) || 0);
+			const tariffPercent = Math.max(0, parseFloat(document.getElementById('inputTariff').value) || 0);
+
+			// Fórmulas fiscales aduaneras de México
+			const valueDollars = qty * priceUSD;
+			const valueMercancia = valueDollars * exchangeRate;
+			const valueCustoms = valueMercancia + freight + insurance;
+			const tariffCost = valueCustoms * (tariffPercent / 100);
+			const dta = valueCustoms * 0.008; // 8 al millar
+			const iva = (valueCustoms + tariffCost + dta) * 0.16; // 16% sobre base acumulada
+			const totalCost = valueCustoms + tariffCost + dta + iva;
+			const unitCost = totalCost / qty;
+
+			// Actualizar vista
+			document.getElementById('outProductName').textContent = productName;
+			document.getElementById('outQtyTag').textContent = `${qty} ${qty === 1 ? 'pieza' : 'piezas'}`;
+			document.getElementById('outTotalCost').textContent = formatMXN(totalCost);
+			document.getElementById('outUnitCost').textContent = formatMXN(unitCost);
+
+			document.getElementById('outMerchUSD').textContent = `(${formatUSD(valueDollars)})`;
+			document.getElementById('outMerchMXN').textContent = formatMXN(valueMercancia);
+			document.getElementById('outFreight').textContent = formatMXN(freight);
+			document.getElementById('outInsurance').textContent = formatMXN(insurance);
+			document.getElementById('outCustomsValue').textContent = formatMXN(valueCustoms);
+
+			document.getElementById('outTariffPercent').textContent = `(${tariffPercent.toFixed(1)}%)`;
+			document.getElementById('outTariffCost').textContent = formatMXN(tariffCost);
+			document.getElementById('outDTA').textContent = formatMXN(dta);
+			document.getElementById('outIVA').textContent = formatMXN(iva);
+			}
+
+			function resetForm() {
+			selectPreset('iphone15');
+			document.getElementById('inputQty').value = 1;
+			document.getElementById('inputExchangeRate').value = '17.95';
+			calculateImport();
+			}
+
+			function imprimirPDF() {
+			const ahora = new Date();
+			const opciones = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+			const fechaFormateada = ahora.toLocaleDateString('es-MX', opciones);
+			const elFecha = document.getElementById('printDate');
+			if (elFecha) {
+			elFecha.textContent = `Emisión: ${fechaFormateada}`;
+			}
+			window.print();
+			}
+
+			const liveInputs = [
+			'inputProduct',
+			'inputQty',
+			'inputPriceUSD',
+			'inputExchangeRate',
+			'inputFreight',
+			'inputInsurance',
+			'inputTariff'
+			];
+
+			liveInputs.forEach(id => {
+			const el = document.getElementById(id);
+			if (el) {
+			el.addEventListener('input', calculateImport);
+			}
+			});
+
+			window.onload = function() {
+			calculateImport();
+			};
+		</script>
+	</body>
+</html>
